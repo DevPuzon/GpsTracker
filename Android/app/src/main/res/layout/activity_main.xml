@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    android:background="@color/bg">
+    <WebView
+        android:id="@+id/web_map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/linear"/>
+    <TextView
+        android:id="@+id/txt_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:height="?attr/actionBarSize"
+        android:layout_alignParentTop="true"
+        android:text="@string/app_name"
+        android:gravity="center_vertical"
+        android:paddingLeft="10dp"
+        android:textSize="22sp"
+        android:textColor="#FFF"/>
+    <LinearLayout
+        android:id="@+id/linear"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/txt_bluetoothmsg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:layout_margin="8dp"
+            android:textColor="#000"
+            android:layout_alignParentTop="true"/>
+        <Button
+            android:id="@+id/btn_smsgps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="Get sms location"
+            android:background="@color/colorPrimary"
+            android:textColor="#FFF" />
+    </LinearLayout>
+</RelativeLayout>
