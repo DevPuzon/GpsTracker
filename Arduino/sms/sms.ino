@@ -26,6 +26,8 @@ void setup()
   sim.println("AT+CNMI=1,2,0,0,0");  //Procedure to handle newly arrived messages(command name in text: new message indications to TE) 
   delay(1000);
   sim.println("AT+CMGL=\"REC UNREAD\""); // Read Unread Messages 
+   delay(1000);
+  sim.println("AT+CMGDA=\"DEL ALL\"");
   digitalWrite(2, HIGH); // sets the digital pin 13 on 
 }
 
@@ -43,7 +45,7 @@ void loop() {
   if (sim.available() > 0)
     Serial.write(sim.read());
   
-  received();  
+  received();   
 }
 
 void received()
@@ -63,7 +65,7 @@ void received()
         //Delete Messages & Save Memory
 //        if (inputString.indexOf("OK") == -1){
 //        sim.println("AT+CMGDA=\"DEL ALL\"");
-//
+
 //        delay(1000);}
 
         inputString = "";

@@ -10,9 +10,11 @@ String inputString;
 
 int light1 = 12;
 
-String sendSms ="";
+String sendSms ="Unstable the gps,.";
 boolean isSim = true;
 boolean isGPS = true;
+int smsCount = 0; 
+int reccount = 0;
 void setup()
 { 
   Serial.begin(9600); 
@@ -30,17 +32,18 @@ void setup()
   sim.println("AT+CMGF=1");  //Set SMS to Text Mode 
   delay(1000);  
   sim.println("AT+CNMI=1,2,0,0,0");  //Procedure to handle newly arrived messages(command name in text: new message indications to TE) 
+   delay(1000);
+  sim.println("AT+CMGDA=\"DEL ALL\"");
   delay(1000); 
   
 //  gpsSerial.listen();
   pinMode(light1, OUTPUT); 
 }
 
-int smsCount = 0; 
 void loop()
 {    
-  if(smsCount > 2){
-     Serial.println("qweqweq");  
+  if(smsCount > 1){
+    Serial.println("sim");   
     received();
   }else{ 
     gpsSerial.listen();
@@ -54,36 +57,36 @@ void loop()
   }  
 }
 
-int reccount = 0;
 void received()
 {  
- Serial.println("sim");  
  sim.listen();
  if(sim.available()){
     delay(100); 
-    isSim = false;
-    Serial.print("sad.");  
+    isSim = false; 
+    Serial.println("sad");  
     while(sim.available()){
       incomingByte = sim.read();
       inputString += incomingByte; 
-      Serial.print(".");  
+      Serial.print(".");   
     } 
     delay(10);       
     inputString.toLowerCase(); // Uppercase the Received Message 
-//   +cmt: "+639555730503","","20/02/27,16:08:41+32"
+//   +cmt: "+639555730503","","20/02/27,16:08:41+32" 
     String number = getValue(inputString,'"',1);
     Serial.println(number);  
-    SendMessage(sendSms,number);
+    if(number != ""){ 
+      reccount = 0;
+      SendMessage(sendSms,number);  
+    }
     delay(50);  
     inputString = ""; 
-    isSim = true;
-    smsCount = 0;
+    isSim = true; 
   } 
-  if(reccount > 6){
+  if(reccount > 30){
     smsCount = 0;
     reccount = 0;
   }reccount =reccount +1;
-  delay(1000);
+  delay(100);
 }
 
 void displayInfo()
@@ -94,9 +97,9 @@ void displayInfo()
     String Lat = String(gps.location.lat(),6);
     String Lng = String(gps.location.lng(),6); 
     Serial.println("("+Lat+","+Lng+")");  
-    sendSms = "("+Lat+","+Lng+")";
+    sendSms = Lat+","+Lng;
   }else{
-    sendSms = "Unstable the gps";
+    sendSms = "Unstable the gps,.";
     Serial.println("[nogps]");  
     digitalWrite(light1,LOW);
   }
@@ -115,6 +118,9 @@ void SendMessage(String msgreq,String number)
   sim.println((char)26);
   delay(1000);
   sim.println("AT+CMGDA=\"DEL ALL\"");
+  delay(1000);
+  smsCount =0;
+  reccount =0;
 }
 String getValue(String data, char separator, int index)
 {

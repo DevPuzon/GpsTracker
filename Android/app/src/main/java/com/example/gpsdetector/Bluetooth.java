@@ -31,11 +31,11 @@ public class Bluetooth  extends Thread{
     Set<BluetoothDevice> pairedDevices;
     static final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private Context context;
-    private IBluetooth iBluetooth;
+    private IMap iMap;
     private CountDownTimer countDownTimer;
-    public Bluetooth(Context context,IBluetooth iBluetooth) {
+    public Bluetooth(Context context,IMap iMap) {
         this.context = context;
-        this.iBluetooth = iBluetooth;
+        this.iMap = iMap;
         try {
             bluetooth_connect_device();
         } catch (IOException e) {
@@ -113,11 +113,11 @@ public class Bluetooth  extends Thread{
             data = data.replace("(","");
             data = data.replace(")","");
             String[] latlangs = data.split(",");
-            String printLocation ="Location : \n"+"\t Latitude : "+latlangs[0] +"\n\t Longtitude : "+latlangs[1];
-            iBluetooth.message(printLocation);
-            if (count > 20){
+            String printLocation ="Bluetooth : \n Location : \n"+"\t Latitude : "+latlangs[0] +"\n\t Longtitude : "+latlangs[1];
+            iMap.message(printLocation);
+            if (count > 4){
                 count=0;
-                iBluetooth.locate(latlangs[0],latlangs[1]);
+                iMap.locate(latlangs[0],latlangs[1]);
             }
             count++;
         }
@@ -126,7 +126,7 @@ public class Bluetooth  extends Thread{
         int end = data.indexOf("]");
         Log.d(TAG, String.valueOf(start) + "  "+  String.valueOf(end));
         if(end > 0 && start == 0) {
-            iBluetooth.message("Unstable the gps");
+            iMap.message("Sms : \n"+"Unstable the gps");
         }
     }
 
@@ -199,12 +199,6 @@ public class Bluetooth  extends Thread{
         });
 
         workerThread.start();
-    }
-
-    public interface IBluetooth{
-        void locate(String lat,String lang);
-        void message(String msg);
-        void checkConnected(Float connect);
     }
 
 }

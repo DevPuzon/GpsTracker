@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
@@ -17,7 +18,9 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity implements Bluetooth.IBluetooth {
+import java.util.UUID;
+
+public class MainActivity extends AppCompatActivity implements IMap {
     private String TAG = "MainActivity";
     private Bluetooth bluetooth;
     private Button btn_smsgps;
@@ -28,6 +31,8 @@ public class MainActivity extends AppCompatActivity implements Bluetooth.IBlueto
     private String myPhonenumber;
 
     int PERMISSION_ALL = 1;
+
+
     String[] PERMISSIONS = {
             Manifest.permission.SEND_SMS,
             android.Manifest.permission.READ_PHONE_STATE,
@@ -41,6 +46,11 @@ public class MainActivity extends AppCompatActivity implements Bluetooth.IBlueto
         bluetooth = new Bluetooth(this, this);
         loading = new Loading(this);
         init();
+        initSMSReceive();
+    }
+
+    private void initSMSReceive() {
+        SmsReceiver.bindListener(this);
     }
 
     private void init() {
@@ -73,21 +83,12 @@ public class MainActivity extends AppCompatActivity implements Bluetooth.IBlueto
 
     private void onSendSms() {
         Log.d(TAG, "Send SMS");
-        Intent smsIntent = new Intent(Intent.ACTION_VIEW);
-
-        smsIntent.setData(Uri.parse("smsto:"));
-        smsIntent.setType("vnd.android-dir/mms-sms");
-        smsIntent.putExtra("address"  , new String ("+639513112562"));
-        smsIntent.putExtra("sms_body"  , myPhonenumber);
-
-        try {
-            startActivity(smsIntent);
-            finish();
-            Log.d(TAG,"Finished sending SMS..." );
-        } catch (android.content.ActivityNotFoundException ex) {
-            Toast.makeText(MainActivity.this,
-                    "SMS faild, please try again later.", Toast.LENGTH_SHORT).show();
-        }
+        SmsManager smsManager = SmsManager.getDefault();
+        smsManager.sendTextMessage("+639513112562", null,
+                "getGps"+String.valueOf(UUID.randomUUID().toString().substring(1,3)),
+                null, null);
+        Toast.makeText(getApplicationContext(), "SMS sent.",
+                Toast.LENGTH_LONG).show();
     }
 
 
