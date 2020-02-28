@@ -9,12 +9,14 @@ char incomingByte;
 String inputString;
 
 int light1 = 12;
+int buzzer = 5;
 
 String sendSms ="Unstable the gps,.";
 boolean isSim = true;
 boolean isGPS = true;
 int smsCount = 0; 
 int reccount = 0;
+boolean turnBth = false;
 void setup()
 { 
   Serial.begin(9600); 
@@ -22,6 +24,11 @@ void setup()
   gpsSerial.begin(9600); 
   sim.listen();
    
+//  gpsSerial.listen();
+  pinMode(light1, OUTPUT); 
+  pinMode(buzzer, OUTPUT);
+  digitalWrite(light1,HIGH);
+  digitalWrite(buzzer,LOW); 
    
   while(!sim.available()){
     sim.println("AT");
@@ -36,25 +43,32 @@ void setup()
   sim.println("AT+CMGDA=\"DEL ALL\"");
   delay(1000); 
   
-//  gpsSerial.listen();
-  pinMode(light1, OUTPUT); 
 }
 
 void loop()
-{    
+{  
   if(smsCount > 1){
     Serial.println("sim");   
     received();
-  }else{ 
-    gpsSerial.listen();
-  }  
-  digitalWrite(light1,HIGH);
-  if (gpsSerial.available() > 0){ 
-    if (gps.encode(gpsSerial.read())){ 
-      Serial.println("displayInfo");  
-      displayInfo(); 
+  }else if(turnBth){ 
+    if(Serial.available()){
+      Serial.println("mweoh");
+      Serial.println(Serial.readString());
+      digitalWrite(buzzer,LOW);
+    }else{
+      Serial.println("arffff");
+//      digitalWrite(buzmzer,HIGH);
     }
-  }  
+    turnBth = false;
+  } else{ 
+    gpsSerial.listen();
+    if (gpsSerial.available() > 0){  
+      if (gps.encode(gpsSerial.read())){ 
+        Serial.println("displayInfo");  
+        displayInfo(); 
+      }
+    } 
+  }   
 }
 
 void received()
@@ -82,9 +96,10 @@ void received()
     inputString = ""; 
     isSim = true; 
   } 
-  if(reccount > 30){
+  if(reccount > 6){
     smsCount = 0;
     reccount = 0;
+    turnBth = true;
   }reccount =reccount +1;
   delay(100);
 }
@@ -101,7 +116,7 @@ void displayInfo()
   }else{
     sendSms = "Unstable the gps,.";
     Serial.println("[nogps]");  
-    digitalWrite(light1,LOW);
+//    digitalWrite(light1,LOW);
   }
   delay(1000);
   isGPS = true;
@@ -121,6 +136,7 @@ void SendMessage(String msgreq,String number)
   delay(1000);
   smsCount =0;
   reccount =0;
+  turnBth = true;
 }
 String getValue(String data, char separator, int index)
 {

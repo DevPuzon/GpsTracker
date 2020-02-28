@@ -126,7 +126,7 @@ public class Bluetooth  extends Thread{
         int end = data.indexOf("]");
         Log.d(TAG, String.valueOf(start) + "  "+  String.valueOf(end));
         if(end > 0 && start == 0) {
-            iMap.message("Sms : \n"+"Unstable the gps");
+            iMap.message("Bluetooth : \n"+"Unstable the gps");
         }
     }
 
@@ -138,12 +138,12 @@ public class Bluetooth  extends Thread{
     OutputStream mmOutputStream;
 
     private void sendtoGps(String msg){
-//        Log.d(TAG, "write: Writing to outputstream: " + msg.getBytes());
-//        try {
-//            mmOutputStream.write(msg.getBytes());
-//        } catch (IOException e) {
-//            Log.e(TAG, "write: Error writing to output stream. " + e.getMessage() );
-//        }
+        Log.d(TAG, "write: Writing to outputstream: " + msg.getBytes());
+        try {
+            mmOutputStream.write(msg.getBytes());
+        } catch (IOException e) {
+            Log.e(TAG, "write: Error writing to output stream. " + e.getMessage() );
+        }
     }
     private void beginListenForData() {
         final Handler
