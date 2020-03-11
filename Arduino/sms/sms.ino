@@ -60,7 +60,7 @@ void received()
         } 
         delay(10);       
         inputString.toLowerCase(); // Uppercase the Received Message 
-        Serial.println(inputString);  
+        Serial.println("hello "+inputString);  
         delay(50); 
         //Delete Messages & Save Memory
 //        if (inputString.indexOf("OK") == -1){

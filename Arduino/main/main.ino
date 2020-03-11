@@ -17,6 +17,16 @@ boolean isGPS = true;
 int smsCount = 0; 
 int reccount = 0;
 boolean turnBth = false;
+unsigned long previous=0;
+unsigned long previous1=0;
+// How frequently we want to send the location (milliseconds)
+static const unsigned long frequency = 15000;
+// How frequently we want to send the location (milliseconds)
+static const unsigned long frequency1 = 15000;
+unsigned long beltTime;
+String responseString;
+// Maximum time to wait SIM module for response
+static long maxResponseTime = 30000;
 void setup()
 { 
   Serial.begin(9600); 
@@ -42,68 +52,41 @@ void setup()
    delay(1000);
   sim.println("AT+CMGDA=\"DEL ALL\"");
   delay(1000); 
-  
+  while(sim.available()){
+    
+    if (sim.available() > 0)
+      Serial.write(sim.read());
+  }
+  gpsSerial.listen();
 }
 
 void loop()
 {  
-  if(smsCount > 1){
-    Serial.println("sim");   
-    received();
-  }else if(turnBth){ 
-    if(Serial.available()){
-      Serial.println("mweoh");
-      Serial.println(Serial.readString());
-      digitalWrite(buzzer,LOW);
-    }else{
-      Serial.println("arffff");
-//      digitalWrite(buzmzer,HIGH);
-    }
-    turnBth = false;
-  } else{ 
-    gpsSerial.listen();
+//  if(smsCount > 1){
+//    Serial.println("sim");   
+//    received();
+//  }else if(turnBth){ 
+//    if(Serial.available()){
+//      Serial.println("mweoh");
+//      Serial.println(Serial.readString());
+//      digitalWrite(buzzer,LOW);
+//    }else{
+//      Serial.println("arffff");
+////      digitalWrite(buzmzer,HIGH);
+//    }
+//    turnBth = false;
+//  } else{ 
+//  }   
+
+  
     if (gpsSerial.available() > 0){  
       if (gps.encode(gpsSerial.read())){ 
         Serial.println("displayInfo");  
         displayInfo(); 
       }
     } 
-  }   
 }
-
-void received()
-{  
- sim.listen();
- if(sim.available()){
-    delay(100); 
-    isSim = false; 
-    Serial.println("sad");  
-    while(sim.available()){
-      incomingByte = sim.read();
-      inputString += incomingByte; 
-      Serial.print(".");   
-    } 
-    delay(10);       
-    inputString.toLowerCase(); // Uppercase the Received Message 
-//   +cmt: "+639555730503","","20/02/27,16:08:41+32" 
-    String number = getValue(inputString,'"',1);
-    Serial.println(number);  
-    if(number != ""){ 
-      reccount = 0;
-      SendMessage(sendSms,number);  
-    }
-    delay(50);  
-    inputString = ""; 
-    isSim = true; 
-  } 
-  if(reccount > 6){
-    smsCount = 0;
-    reccount = 0;
-    turnBth = true;
-  }reccount =reccount +1;
-  delay(100);
-}
-
+ 
 void displayInfo()
 { 
   isGPS = false;
@@ -118,12 +101,19 @@ void displayInfo()
     Serial.println("[nogps]");  
 //    digitalWrite(light1,LOW);
   }
-  delay(1000);
-  isGPS = true;
-  smsCount = smsCount+1; 
+
+  
+  if(millis() - previous > frequency)
+  { 
+//    +cmgs: 163
+
+    previous = millis();
+    SendMessage("1111","+639555730503");
+  }  
 }
 void SendMessage(String msgreq,String number)
 {
+  sim.listen();
   sim.println("AT+CMGF=1");
   delay(1000);
   sim.println("AT+CMGS=\"" + number + "\"\r");
@@ -131,13 +121,67 @@ void SendMessage(String msgreq,String number)
   sim.println(msgreq);
   delay(100);
   sim.println((char)26);
-  delay(1000);
-  sim.println("AT+CMGDA=\"DEL ALL\"");
-  delay(1000);
+  sim.println(); 
   smsCount =0;
   reccount =0;
-  turnBth = true;
+  turnBth = true; 
+  while (sim.available())
+    Serial.write(sim.read());
+  
+//    delay(20000);
+// 
+//    Serial.println("gpsSerial.listen();");  
+//    gpsSerial.listen(); 
 }
+
+void waitUntilResponse(String response)
+{
+  beltTime = millis();
+  responseString="";
+  String totalResponse = "";
+  while(responseString.indexOf(response) < 0 && millis() - beltTime < maxResponseTime)
+  {
+    readResponse();
+    totalResponse = totalResponse + responseString;
+    Serial.println(responseString);
+  }
+
+  if(totalResponse.length() <= 0)
+  {
+    Serial.println("No response from the module. Check wiring, SIM-card and power!"); 
+    delay(30000);
+//    exit(0); // No way to recoverk
+  }
+  else if (responseString.indexOf(response) < 0)
+  {
+    Serial.println("Unexpected response from the module");
+    Serial.println(totalResponse); 
+    delay(30000);
+//    exit(0); // No way to recover
+  }
+}
+void readResponse()
+{
+  responseString = "";
+  while(responseString.length() <= 0 || !responseString.endsWith("\n"))
+  {
+    tryToRead();
+
+    if(millis() - beltTime > maxResponseTime)
+    {
+      return;
+    }
+  }
+}
+void tryToRead()
+{
+  while(sim.available())
+  {
+    char c = sim.read();  //gets one byte from serial buffer
+    responseString += c; //makes the string readString
+  }
+}
+
 String getValue(String data, char separator, int index)
 {
     int found = 0;
